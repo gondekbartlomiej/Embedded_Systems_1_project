@@ -60,18 +60,42 @@ void Error_Handler(void);
 /* Private defines -----------------------------------------------------------*/
 #define B1_Pin GPIO_PIN_13
 #define B1_GPIO_Port GPIOC
+#define disp_G_Pin GPIO_PIN_0
+#define disp_G_GPIO_Port GPIOC
+#define disp_D_Pin GPIO_PIN_1
+#define disp_D_GPIO_Port GPIOC
+#define disp_E_Pin GPIO_PIN_2
+#define disp_E_GPIO_Port GPIOC
+#define disp_C_Pin GPIO_PIN_3
+#define disp_C_GPIO_Port GPIOC
 #define USART_TX_Pin GPIO_PIN_2
 #define USART_TX_GPIO_Port GPIOA
 #define USART_RX_Pin GPIO_PIN_3
 #define USART_RX_GPIO_Port GPIOA
 #define LD2_Pin GPIO_PIN_5
 #define LD2_GPIO_Port GPIOA
+#define disp_B_Pin GPIO_PIN_4
+#define disp_B_GPIO_Port GPIOC
+#define disp_F_Pin GPIO_PIN_5
+#define disp_F_GPIO_Port GPIOC
+#define button_1_Pin GPIO_PIN_0
+#define button_1_GPIO_Port GPIOB
+#define disp_A_Pin GPIO_PIN_6
+#define disp_A_GPIO_Port GPIOC
+#define disp_DP_Pin GPIO_PIN_7
+#define disp_DP_GPIO_Port GPIOC
+#define disp_COM4_Pin GPIO_PIN_8
+#define disp_COM4_GPIO_Port GPIOC
+#define disp_COM3_Pin GPIO_PIN_9
+#define disp_COM3_GPIO_Port GPIOC
 #define TMS_Pin GPIO_PIN_13
 #define TMS_GPIO_Port GPIOA
 #define TCK_Pin GPIO_PIN_14
 #define TCK_GPIO_Port GPIOA
-#define SWO_Pin GPIO_PIN_3
-#define SWO_GPIO_Port GPIOB
+#define disp_COM2_Pin GPIO_PIN_10
+#define disp_COM2_GPIO_Port GPIOC
+#define disp_COM1_Pin GPIO_PIN_11
+#define disp_COM1_GPIO_Port GPIOC
 /* USER CODE BEGIN Private defines */
 
 /* USER CODE END Private defines */
