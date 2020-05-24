@@ -1,0 +1,18 @@
+!SESSION 2020-05-24 20:10:53.789 -----------------------------------------------
+eclipse.buildId=Version 1.3.0
+java.version=1.8.0_242
+java.vendor=AdoptOpenJDK
+BootLoader constants: OS=linux, ARCH=x86_64, WS=gtk, NL=en_US
+Command-line arguments:  -os linux -ws gtk -arch x86_64
+
+!ENTRY com.st.stm32cube.ide.mcu.informationcenter 1 1 2020-05-24 20:11:19.761
+!MESSAGE Log4j initialized with config file /home/bgondek/Desktop/CPS/Season_1/Embedded Systems/Embedded_Systems_1_project/.metadata/.log4j.xml
+
+!ENTRY com.st.stm32cube.ide.mcu.ide 4 4 2020-05-24 20:11:22.532
+!MESSAGE com.st.stm32cube.ide.mcu.ide/META-INF/version/build_ref file not found, build reference will not be reported into properties
+
+!ENTRY com.st.stm32cube.ide.mcu.ide 1 1 2020-05-24 20:11:23.558
+!MESSAGE Started RMI Server, listening on port 41337
+
+!ENTRY org.eclipse.cdt.core 1 0 2020-05-24 20:12:32.472
+!MESSAGE Indexed 'ES_1' (23 sources, 100 headers) in 6.44 sec: 7,730 declarations; 32,475 references; 2 unresolved inclusions; 29 syntax errors; 145 unresolved names (0.36%)

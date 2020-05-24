@@ -1,0 +1,24 @@
+22:59:18 **** Incremental Build of configuration Debug for project ES_1 ****
+make -j4 all 
+arm-none-eabi-gcc "../Core/Src/main.c" -mcpu=cortex-m4 -std=gnu11 -g3 -DUSE_HAL_DRIVER -DSTM32F411xE -DDEBUG -c -I../Drivers/CMSIS/Include -I../Drivers/STM32F4xx_HAL_Driver/Inc -I../Core/Inc -I../Drivers/CMSIS/Device/ST/STM32F4xx/Include -I../Drivers/STM32F4xx_HAL_Driver/Inc/Legacy -O0 -ffunction-sections -fdata-sections -Wall -fstack-usage -MMD -MP -MF"Core/Src/main.d" -MT"Core/Src/main.o" --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -o "Core/Src/main.o"
+arm-none-eabi-gcc -o "ES_1.elf" @"objects.list"   -mcpu=cortex-m4 -T"/home/bgondek/Desktop/CPS/Season_1/Embedded Systems/Embedded_Systems_1_project/ES_1/STM32F411RETX_FLASH.ld" --specs=nosys.specs -Wl,-Map="ES_1.map" -Wl,--gc-sections -static --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
+Finished building target: ES_1.elf
+ 
+arm-none-eabi-objdump -h -S  ES_1.elf  > "ES_1.list"
+arm-none-eabi-objcopy  -O binary  ES_1.elf  "ES_1.bin"
+arm-none-eabi-size   ES_1.elf 
+   text	   data	    bss	    dec	    hex	filename
+  15132	     20	   2020	  17172	   4314	ES_1.elf
+Finished building: default.size.stdout
+Finished building: ES_1.bin
+ 
+ 
+Finished building: ES_1.list
+ 
+22:59:26 **** Incremental Build of configuration Debug for project ES_1 ****
+make -j4 all 
+arm-none-eabi-size   ES_1.elf 
+   text	   data	    bss	    dec	    hex	filename
+  15132	     20	   2020	  17172	   4314	ES_1.elf
+Finished building: default.size.stdout
+ 

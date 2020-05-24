@@ -40,8 +40,8 @@ ES_1.bin \
 all: ES_1.elf secondary-outputs
 
 # Tool invocations
-ES_1.elf: $(OBJS) $(USER_OBJS) /home/bgondek/Desktop/CPS/Season_1/ES/ES_1/STM32F411RETX_FLASH.ld
-	arm-none-eabi-gcc -o "ES_1.elf" @"objects.list" $(USER_OBJS) $(LIBS) -mcpu=cortex-m4 -T"/home/bgondek/Desktop/CPS/Season_1/ES/ES_1/STM32F411RETX_FLASH.ld" --specs=nosys.specs -Wl,-Map="ES_1.map" -Wl,--gc-sections -static --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
+ES_1.elf: $(OBJS) $(USER_OBJS) /home/bgondek/Desktop/CPS/Season_1/Embedded\ Systems/Embedded_Systems_1_project/ES_1/STM32F411RETX_FLASH.ld
+	arm-none-eabi-gcc -o "ES_1.elf" @"objects.list" $(USER_OBJS) $(LIBS) -mcpu=cortex-m4 -T"/home/bgondek/Desktop/CPS/Season_1/Embedded Systems/Embedded_Systems_1_project/ES_1/STM32F411RETX_FLASH.ld" --specs=nosys.specs -Wl,-Map="ES_1.map" -Wl,--gc-sections -static --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
 	@echo 'Finished building target: $@'
 	@echo ' '
 
