@@ -1,3 +1,6 @@
-main.c:122:6:SystemClock_Config	96	static
-main.c:72:5:main	48	static
-main.c:310:6:Error_Handler	0	static
+main.c:70:6:disp_buffer_update.part.0	8	static
+main.c:70:6:disp_buffer_update	0	static
+main.c:198:6:HAL_TIM_PeriodElapsedCallback	16	static
+main.c:352:6:SystemClock_Config	96	static
+main.c:264:5:main	88	static
+main.c:561:6:Error_Handler	0	static

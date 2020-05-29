@@ -92,6 +92,8 @@ void Error_Handler(void);
 #define TMS_GPIO_Port GPIOA
 #define TCK_Pin GPIO_PIN_14
 #define TCK_GPIO_Port GPIOA
+#define gyro_exti_Pin GPIO_PIN_15
+#define gyro_exti_GPIO_Port GPIOA
 #define disp_COM2_Pin GPIO_PIN_10
 #define disp_COM2_GPIO_Port GPIOC
 #define disp_COM1_Pin GPIO_PIN_11
