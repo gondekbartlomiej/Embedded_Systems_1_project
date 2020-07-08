@@ -23,7 +23,7 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-
+#include<stdio.h>
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -42,6 +42,8 @@
 
 /* Private variables ---------------------------------------------------------*/
 SPI_HandleTypeDef hspi1;
+DMA_HandleTypeDef hdma_spi1_tx;
+DMA_HandleTypeDef hdma_spi1_rx;
 
 TIM_HandleTypeDef htim10;
 
@@ -50,11 +52,31 @@ UART_HandleTypeDef huart2;
 /* USER CODE BEGIN PV */
 GPIO_PinState disp_state [4][8];
 
-const uint16_t tx_buffer [3] = {0xA900,   //nonincremental reading buffer 10 1001
-                                0xAB00,   //nonincremental reading buffer 10 1011
-                                0xAD00};  //nonincremental reading buffer 10 1101
+const uint16_t  setup = 0x20C7; //PD- 1 power delivery - 0-off / 1-on
+								//DR- 1 data rate      - 0-100Hz / 1-400hz
+								//FS- 0 full scale     - 0-2G range / 1-9G range
+								//0-  0 null reg       - must remain 0
+								//    C
+								//-------------------------------------------------
+								//0-  0 null reg       - must remain 0
+								//Zen-1 enable Z axis  - 0-off / 1-on
+								//Yen-1 enable Y axis  - 0-off / 1-on
+								//Xen-1 enable X axis  - 0-off / 1-on
+								//    7
 
-volatile uint16_t rx_buffer [3];
+
+const uint16_t  tx_buffer[3] ={0xE900, 0x0000, 0x0000};
+volatile int8_t rx_buffer [6];
+
+volatile uint8_t active_axis = 0;
+volatile int gyro_read[3];
+
+volatile char msg[50];
+
+char display[4];
+volatile int size;
+
+volatile int cnt = 0;
 
 
 /* USER CODE END PV */
@@ -62,6 +84,7 @@ volatile uint16_t rx_buffer [3];
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
+static void MX_DMA_Init(void);
 static void MX_SPI1_Init(void);
 static void MX_TIM10_Init(void);
 static void MX_USART2_UART_Init(void);
@@ -170,6 +193,16 @@ void disp_buffer_update(const uint8_t com, const char digit){
       disp_state[com][5] = GPIO_PIN_SET;
       disp_state[com][6] = GPIO_PIN_SET;
       break;
+
+    case 'o':  //put o on <com> port of display buffer
+      disp_state[com][0] = GPIO_PIN_RESET;
+	  disp_state[com][1] = GPIO_PIN_RESET;
+	  disp_state[com][2] = GPIO_PIN_SET;
+	  disp_state[com][3] = GPIO_PIN_SET;
+	  disp_state[com][4] = GPIO_PIN_SET;
+	  disp_state[com][5] = GPIO_PIN_RESET;
+	  disp_state[com][6] = GPIO_PIN_SET;
+	  break;
     
     case '-':  //put '-' on <com> port of display buffer
       disp_state[com][0] = GPIO_PIN_RESET;
@@ -195,61 +228,156 @@ void disp_buffer_update(const uint8_t com, const char digit){
   }
 }
 
-void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim){
-	static uint8_t active_com = 0;
-	if(htim->Instance==TIM10){
+void put_dot(uint8_t place){
+	switch(place){
+	case 0:
+		disp_state[0][7] = GPIO_PIN_SET;
+		disp_state[1][7] = GPIO_PIN_RESET;
+		disp_state[2][7] = GPIO_PIN_RESET;
+		disp_state[3][7] = GPIO_PIN_RESET;
+		break;
 
-		++active_com;
-		if(active_com >3 ) active_com = 0;
+	case 1:
+		disp_state[0][7] = GPIO_PIN_RESET;
+		disp_state[1][7] = GPIO_PIN_SET;
+		disp_state[2][7] = GPIO_PIN_RESET;
+		disp_state[3][7] = GPIO_PIN_RESET;
+		break;
 
-		switch(active_com){
-		case 0:
-			HAL_GPIO_WritePin(disp_COM1_GPIO_Port, disp_COM1_Pin, GPIO_PIN_RESET);
-			HAL_GPIO_WritePin(disp_COM2_GPIO_Port, disp_COM2_Pin, GPIO_PIN_SET);
-			HAL_GPIO_WritePin(disp_COM3_GPIO_Port, disp_COM3_Pin, GPIO_PIN_SET);
-			HAL_GPIO_WritePin(disp_COM4_GPIO_Port, disp_COM4_Pin, GPIO_PIN_SET);
-			break;
+	case 2:
+		disp_state[0][7] = GPIO_PIN_RESET;
+		disp_state[1][7] = GPIO_PIN_RESET;
+		disp_state[2][7] = GPIO_PIN_SET;
+		disp_state[3][7] = GPIO_PIN_RESET;
+		break;
 
-		case 1:
-			HAL_GPIO_WritePin(disp_COM1_GPIO_Port, disp_COM1_Pin, GPIO_PIN_SET);
-			HAL_GPIO_WritePin(disp_COM2_GPIO_Port, disp_COM2_Pin, GPIO_PIN_RESET);
-			HAL_GPIO_WritePin(disp_COM3_GPIO_Port, disp_COM3_Pin, GPIO_PIN_SET);
-			HAL_GPIO_WritePin(disp_COM4_GPIO_Port, disp_COM4_Pin, GPIO_PIN_SET);
-			break;
+	case 3:
+		disp_state[0][7] = GPIO_PIN_RESET;
+		disp_state[1][7] = GPIO_PIN_RESET;
+		disp_state[2][7] = GPIO_PIN_RESET;
+		disp_state[3][7] = GPIO_PIN_SET;
+		break;
 
-		case 2:
-			HAL_GPIO_WritePin(disp_COM1_GPIO_Port, disp_COM1_Pin, GPIO_PIN_SET);
-			HAL_GPIO_WritePin(disp_COM2_GPIO_Port, disp_COM2_Pin, GPIO_PIN_SET);
-			HAL_GPIO_WritePin(disp_COM3_GPIO_Port, disp_COM3_Pin, GPIO_PIN_RESET);
-			HAL_GPIO_WritePin(disp_COM4_GPIO_Port, disp_COM4_Pin, GPIO_PIN_SET);
-			break;
-
-		case 3:
-			HAL_GPIO_WritePin(disp_COM1_GPIO_Port, disp_COM1_Pin, GPIO_PIN_SET);
-			HAL_GPIO_WritePin(disp_COM2_GPIO_Port, disp_COM2_Pin, GPIO_PIN_SET);
-			HAL_GPIO_WritePin(disp_COM3_GPIO_Port, disp_COM3_Pin, GPIO_PIN_SET);
-			HAL_GPIO_WritePin(disp_COM4_GPIO_Port, disp_COM4_Pin, GPIO_PIN_RESET);
-			break;
-
-		default:
-			HAL_GPIO_WritePin(disp_COM1_GPIO_Port, disp_COM1_Pin, GPIO_PIN_RESET);
-			HAL_GPIO_WritePin(disp_COM2_GPIO_Port, disp_COM2_Pin, GPIO_PIN_RESET);
-			HAL_GPIO_WritePin(disp_COM3_GPIO_Port, disp_COM3_Pin, GPIO_PIN_RESET);
-			HAL_GPIO_WritePin(disp_COM4_GPIO_Port, disp_COM4_Pin, GPIO_PIN_RESET);
-			break;
-		}
-
-		HAL_GPIO_WritePin(disp_A_GPIO_Port, disp_A_Pin, disp_state[active_com][0]);
-		HAL_GPIO_WritePin(disp_B_GPIO_Port, disp_B_Pin, disp_state[active_com][1]);
-		HAL_GPIO_WritePin(disp_C_GPIO_Port, disp_C_Pin, disp_state[active_com][2]);
-		HAL_GPIO_WritePin(disp_D_GPIO_Port, disp_D_Pin, disp_state[active_com][3]);
-		HAL_GPIO_WritePin(disp_E_GPIO_Port, disp_E_Pin, disp_state[active_com][4]);
-		HAL_GPIO_WritePin(disp_F_GPIO_Port, disp_F_Pin, disp_state[active_com][5]);
-		HAL_GPIO_WritePin(disp_G_GPIO_Port, disp_G_Pin, disp_state[active_com][6]);
-		HAL_GPIO_WritePin(disp_DP_GPIO_Port, disp_DP_Pin, disp_state[active_com][7]);
-
+	default:
+		disp_state[0][7] = GPIO_PIN_RESET;
+		disp_state[1][7] = GPIO_PIN_RESET;
+		disp_state[2][7] = GPIO_PIN_RESET;
+		disp_state[3][7] = GPIO_PIN_RESET;
+		break;
 	}
 }
+
+void switch_disp_com(){
+	static uint8_t active_com = 0;
+
+	++active_com;
+	if(active_com > 3) active_com = 0;
+
+	switch(active_com){
+	case 0:
+		HAL_GPIO_WritePin(disp_COM1_GPIO_Port, disp_COM1_Pin, GPIO_PIN_RESET);
+		HAL_GPIO_WritePin(disp_COM2_GPIO_Port, disp_COM2_Pin, GPIO_PIN_SET);
+		HAL_GPIO_WritePin(disp_COM3_GPIO_Port, disp_COM3_Pin, GPIO_PIN_SET);
+		HAL_GPIO_WritePin(disp_COM4_GPIO_Port, disp_COM4_Pin, GPIO_PIN_SET);
+		break;
+
+	case 1:
+		HAL_GPIO_WritePin(disp_COM1_GPIO_Port, disp_COM1_Pin, GPIO_PIN_SET);
+		HAL_GPIO_WritePin(disp_COM2_GPIO_Port, disp_COM2_Pin, GPIO_PIN_RESET);
+		HAL_GPIO_WritePin(disp_COM3_GPIO_Port, disp_COM3_Pin, GPIO_PIN_SET);
+		HAL_GPIO_WritePin(disp_COM4_GPIO_Port, disp_COM4_Pin, GPIO_PIN_SET);
+		break;
+
+	case 2:
+		HAL_GPIO_WritePin(disp_COM1_GPIO_Port, disp_COM1_Pin, GPIO_PIN_SET);
+		HAL_GPIO_WritePin(disp_COM2_GPIO_Port, disp_COM2_Pin, GPIO_PIN_SET);
+		HAL_GPIO_WritePin(disp_COM3_GPIO_Port, disp_COM3_Pin, GPIO_PIN_RESET);
+		HAL_GPIO_WritePin(disp_COM4_GPIO_Port, disp_COM4_Pin, GPIO_PIN_SET);
+		break;
+
+	case 3:
+		HAL_GPIO_WritePin(disp_COM1_GPIO_Port, disp_COM1_Pin, GPIO_PIN_SET);
+		HAL_GPIO_WritePin(disp_COM2_GPIO_Port, disp_COM2_Pin, GPIO_PIN_SET);
+		HAL_GPIO_WritePin(disp_COM3_GPIO_Port, disp_COM3_Pin, GPIO_PIN_SET);
+		HAL_GPIO_WritePin(disp_COM4_GPIO_Port, disp_COM4_Pin, GPIO_PIN_RESET);
+		break;
+
+	default:
+		HAL_GPIO_WritePin(disp_COM1_GPIO_Port, disp_COM1_Pin, GPIO_PIN_RESET);
+		HAL_GPIO_WritePin(disp_COM2_GPIO_Port, disp_COM2_Pin, GPIO_PIN_RESET);
+		HAL_GPIO_WritePin(disp_COM3_GPIO_Port, disp_COM3_Pin, GPIO_PIN_RESET);
+		HAL_GPIO_WritePin(disp_COM4_GPIO_Port, disp_COM4_Pin, GPIO_PIN_RESET);
+		break;
+
+	}
+	HAL_GPIO_WritePin(disp_A_GPIO_Port, disp_A_Pin, disp_state[active_com][0]);
+	HAL_GPIO_WritePin(disp_B_GPIO_Port, disp_B_Pin, disp_state[active_com][1]);
+	HAL_GPIO_WritePin(disp_C_GPIO_Port, disp_C_Pin, disp_state[active_com][2]);
+	HAL_GPIO_WritePin(disp_D_GPIO_Port, disp_D_Pin, disp_state[active_com][3]);
+	HAL_GPIO_WritePin(disp_E_GPIO_Port, disp_E_Pin, disp_state[active_com][4]);
+	HAL_GPIO_WritePin(disp_F_GPIO_Port, disp_F_Pin, disp_state[active_com][5]);
+	HAL_GPIO_WritePin(disp_G_GPIO_Port, disp_G_Pin, disp_state[active_com][6]);
+	HAL_GPIO_WritePin(disp_DP_GPIO_Port, disp_DP_Pin, disp_state[active_com][7]);
+}
+
+void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim){
+	if(htim->Instance==TIM10){
+
+		switch_disp_com();
+
+
+
+		//X - axis
+		gyro_read[0] = (2*(rx_buffer[0])/1.27);
+
+		//Y - axis
+		gyro_read[1] = (2*(rx_buffer[2])/1.27);
+
+		//Z - axis
+		gyro_read[2] = (2*(rx_buffer[4])/1.27);
+
+		if(cnt){
+			sprintf(display, "o5 %d", active_axis);
+			put_dot((uint8_t)5);
+			--cnt;
+		}
+		else{
+			if(gyro_read[active_axis] < 0)
+				sprintf(display, "%04d", gyro_read[active_axis]);
+			else
+				sprintf(display, " %03d", gyro_read[active_axis]);
+
+			put_dot((uint8_t) 1);
+		}
+		disp_buffer_update(0, display[0]);
+		disp_buffer_update(1, display[1]);
+		disp_buffer_update(2, display[2]);
+		disp_buffer_update(3, display[3]);
+
+
+
+
+		HAL_GPIO_WritePin(gyro_CS_GPIO_Port, gyro_CS_Pin, GPIO_PIN_SET);
+		HAL_GPIO_WritePin(gyro_CS_GPIO_Port, gyro_CS_Pin, GPIO_PIN_RESET);
+		HAL_SPI_TransmitReceive_DMA(&hspi1, tx_buffer, rx_buffer, 3);
+	}
+}
+
+
+void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin){
+  if(GPIO_Pin == button_IT_Pin){
+
+	  //HAL_Delay(20);
+	  if(HAL_GPIO_ReadPin(button_IT_GPIO_Port, button_IT_Pin)==GPIO_PIN_SET){
+		  cnt = 200;
+		  active_axis += 1;
+		  if(active_axis > 2) active_axis = 0;
+	  }
+
+  }
+}
+
+
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
@@ -264,15 +392,6 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim){
 int main(void)
 {
   /* USER CODE BEGIN 1 */
-
-	uint8_t receive[2];
-
-
-	uint8_t gyro_setup[2] =   {0b00100000, 0b01000111};
-	uint8_t gyro_s_check[2] = {0b10100000, 0b00000000};
-	uint8_t gyro_x_check[2] = {0b10101001, 0b00000000};
-	uint8_t gyro_y_check[2] = {0b10101011, 0b00000000};
-	uint8_t gyro_z_check[2] = {0b10101101, 0b00000000};
 
   /* USER CODE END 1 */
 
@@ -294,22 +413,19 @@ int main(void)
 
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
+  MX_DMA_Init();
   MX_SPI1_Init();
   MX_TIM10_Init();
   MX_USART2_UART_Init();
   /* USER CODE BEGIN 2 */
-//  HAL_TIM_Base_Start_IT(&htim10);
 
-//  HAL_GPIO_WritePin(spi_CS_GPIO_Port, spi_CS_Pin, GPIO_PIN_RESET);
-  HAL_Delay(1);
-  HAL_SPI_Transmit(&hspi1, gyro_setup, 1, 1000);
 
-//  HAL_GPIO_WritePin(spi_CS_GPIO_Port, spi_CS_Pin, GPIO_PIN_SET);
+  HAL_TIM_Base_Start_IT(&htim10);
 
-  disp_buffer_update(0,'8');
-  disp_buffer_update(1,'9');
-  disp_buffer_update(2,'0');
-  disp_buffer_update(3,'-');
+
+  HAL_GPIO_WritePin(gyro_CS_GPIO_Port, gyro_CS_Pin, GPIO_PIN_RESET);
+  HAL_SPI_Transmit(&hspi1, &setup, 1, 1000);
+  HAL_GPIO_WritePin(gyro_CS_GPIO_Port, gyro_CS_Pin, GPIO_PIN_SET);
 
 
   /* USER CODE END 2 */
@@ -318,29 +434,23 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
+
+
+
+
+	  size = sprintf(msg, "[X]: %3d, [Y]: %3d, [Z]: %3d\n\r",
+				 	 rx_buffer[0],
+					 rx_buffer[2],
+					 rx_buffer[4] );
+
+
+
+	  HAL_UART_Transmit(&huart2, msg, size, 100);
+
+	  HAL_Delay(250);
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
-
-	  HAL_SPI_TransmitReceive(&hspi1, gyro_s_check, receive, 2, 100);
-	  HAL_UART_Transmit(&huart2, receive, 2, 100);
-	  HAL_UART_Transmit(&huart2, '\t', 1, 100);
-
-	  HAL_SPI_TransmitReceive(&hspi1, gyro_x_check, receive, 2, 100);
-	  HAL_UART_Transmit(&huart2, receive, 2, 100);
-	  HAL_UART_Transmit(&huart2, '\t', 1, 100);
-
-	  HAL_SPI_TransmitReceive(&hspi1, gyro_y_check, receive, 2, 100);
-	  HAL_UART_Transmit(&huart2, receive, 2, 100);
-	  HAL_UART_Transmit(&huart2, '\t', 1, 100);uint16_t send = 0xA900;
-
-	  HAL_SPI_TransmitReceive(&hspi1, gyro_z_check, receive, 2, 100);
-	  HAL_UART_Transmit(&huart2, receive, 2, 100);
-	  HAL_UART_Transmit(&huart2, "\n\r", 2, 100);
-
-	  HAL_Delay(100);
-
-
   }
   /* USER CODE END 3 */
 }
@@ -406,11 +516,11 @@ static void MX_SPI1_Init(void)
   hspi1.Instance = SPI1;
   hspi1.Init.Mode = SPI_MODE_MASTER;
   hspi1.Init.Direction = SPI_DIRECTION_2LINES;
-  hspi1.Init.DataSize = SPI_DATASIZE_8BIT;
+  hspi1.Init.DataSize = SPI_DATASIZE_16BIT;
   hspi1.Init.CLKPolarity = SPI_POLARITY_HIGH;
   hspi1.Init.CLKPhase = SPI_PHASE_2EDGE;
-  hspi1.Init.NSS = SPI_NSS_HARD_OUTPUT;
-  hspi1.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_16;
+  hspi1.Init.NSS = SPI_NSS_SOFT;
+  hspi1.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_128;
   hspi1.Init.FirstBit = SPI_FIRSTBIT_MSB;
   hspi1.Init.TIMode = SPI_TIMODE_DISABLE;
   hspi1.Init.CRCCalculation = SPI_CRCCALCULATION_DISABLE;
@@ -441,9 +551,9 @@ static void MX_TIM10_Init(void)
 
   /* USER CODE END TIM10_Init 1 */
   htim10.Instance = TIM10;
-  htim10.Init.Prescaler = 4;
+  htim10.Init.Prescaler = 9;
   htim10.Init.CounterMode = TIM_COUNTERMODE_UP;
-  htim10.Init.Period = 24999;
+  htim10.Init.Period = 49999;
   htim10.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
   htim10.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
   if (HAL_TIM_Base_Init(&htim10) != HAL_OK)
@@ -489,6 +599,25 @@ static void MX_USART2_UART_Init(void)
 
 }
 
+/** 
+  * Enable DMA controller clock
+  */
+static void MX_DMA_Init(void) 
+{
+
+  /* DMA controller clock enable */
+  __HAL_RCC_DMA2_CLK_ENABLE();
+
+  /* DMA interrupt init */
+  /* DMA2_Stream0_IRQn interrupt configuration */
+  HAL_NVIC_SetPriority(DMA2_Stream0_IRQn, 0, 0);
+  HAL_NVIC_EnableIRQ(DMA2_Stream0_IRQn);
+  /* DMA2_Stream2_IRQn interrupt configuration */
+  HAL_NVIC_SetPriority(DMA2_Stream2_IRQn, 0, 0);
+  HAL_NVIC_EnableIRQ(DMA2_Stream2_IRQn);
+
+}
+
 /**
   * @brief GPIO Initialization Function
   * @param None
@@ -510,7 +639,7 @@ static void MX_GPIO_Init(void)
                           |disp_COM4_Pin|disp_COM3_Pin|disp_COM2_Pin|disp_COM1_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(LD2_GPIO_Port, LD2_Pin, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIOA, gyro_CS_Pin|LD2_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin : B1_Pin */
   GPIO_InitStruct.Pin = B1_Pin;
@@ -529,24 +658,22 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
 
-  /*Configure GPIO pin : LD2_Pin */
-  GPIO_InitStruct.Pin = LD2_Pin;
+  /*Configure GPIO pins : gyro_CS_Pin LD2_Pin */
+  GPIO_InitStruct.Pin = gyro_CS_Pin|LD2_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-  HAL_GPIO_Init(LD2_GPIO_Port, &GPIO_InitStruct);
+  HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
-  /*Configure GPIO pin : button_1_Pin */
-  GPIO_InitStruct.Pin = button_1_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
-  HAL_GPIO_Init(button_1_GPIO_Port, &GPIO_InitStruct);
-
-  /*Configure GPIO pin : gyro_exti_Pin */
-  GPIO_InitStruct.Pin = gyro_exti_Pin;
+  /*Configure GPIO pin : button_IT_Pin */
+  GPIO_InitStruct.Pin = button_IT_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
-  HAL_GPIO_Init(gyro_exti_GPIO_Port, &GPIO_InitStruct);
+  GPIO_InitStruct.Pull = GPIO_PULLUP;
+  HAL_GPIO_Init(button_IT_GPIO_Port, &GPIO_InitStruct);
+
+  /* EXTI interrupt init*/
+  HAL_NVIC_SetPriority(EXTI0_IRQn, 0, 0);
+  HAL_NVIC_EnableIRQ(EXTI0_IRQn);
 
 }
 
