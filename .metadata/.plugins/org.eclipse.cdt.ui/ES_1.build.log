@@ -1,10 +1,10 @@
-19:05:18 **** Incremental Build of configuration Debug for project ES_1 ****
+19:37:20 **** Incremental Build of configuration Debug for project ES_1 ****
 make -j4 all 
 arm-none-eabi-size   ES_1.elf 
    text	   data	    bss	    dec	    hex	filename
-  22188	    120	   2120	  24428	   5f6c	ES_1.elf
+  21780	    120	   2280	  24180	   5e74	ES_1.elf
 Finished building: default.size.stdout
  
 
-19:05:19 Build Finished. 0 errors, 0 warnings. (took 727ms)
+19:37:21 Build Finished. 0 errors, 0 warnings. (took 731ms)
 

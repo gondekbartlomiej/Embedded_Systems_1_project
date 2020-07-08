@@ -33,6 +33,7 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
+#define FilterN 50
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -77,6 +78,15 @@ char display[4];
 volatile int size;
 
 volatile int cnt = 0;
+volatile int8_t x_reg[FilterN];
+volatile int8_t y_reg[FilterN];
+volatile int8_t z_reg[FilterN];
+
+volatile int16_t x_sum=0;
+volatile int16_t y_sum=0;
+volatile int16_t z_sum=0;
+
+volatile uint8_t index = 0;
 
 
 /* USER CODE END PV */
@@ -321,20 +331,37 @@ void switch_disp_com(){
 }
 
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim){
+	uint8_t i = 0;
 	if(htim->Instance==TIM10){
 
 		switch_disp_com();
 
+		x_reg[index] = rx_buffer[0];
+		y_reg[index] = rx_buffer[2];
+		z_reg[index] = rx_buffer[4];
+
+		if(++index > FilterN-1) index = 0;
+
+		x_sum=0;
+		y_sum=0;
+		z_sum=0;
+		for(i=0; i<FilterN; i++){
+			x_sum += x_reg[i];
+			y_sum += y_reg[i];
+			z_sum += z_reg[i];
+		}
+
+
 
 
 		//X - axis
-		gyro_read[0] = (2*(rx_buffer[0])/1.27);
+		gyro_read[0] = ((2*x_sum/FilterN)/1.2);
 
 		//Y - axis
-		gyro_read[1] = (2*(rx_buffer[2])/1.27);
+		gyro_read[1] = ((2*y_sum/FilterN)/1.2);
 
 		//Z - axis
-		gyro_read[2] = (2*(rx_buffer[4])/1.27);
+		gyro_read[2] = ((2*z_sum/FilterN)/1.2);
 
 		if(cnt){
 			sprintf(display, "o5 %d", active_axis);
@@ -359,7 +386,8 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim){
 
 		HAL_GPIO_WritePin(gyro_CS_GPIO_Port, gyro_CS_Pin, GPIO_PIN_SET);
 		HAL_GPIO_WritePin(gyro_CS_GPIO_Port, gyro_CS_Pin, GPIO_PIN_RESET);
-		HAL_SPI_TransmitReceive_DMA(&hspi1, tx_buffer, rx_buffer, 3);
+		HAL_SPI_TransmitReceive(&hspi1, tx_buffer, rx_buffer, 3,100);
+		HAL_GPIO_WritePin(gyro_CS_GPIO_Port, gyro_CS_Pin, GPIO_PIN_SET);
 	}
 }
 
