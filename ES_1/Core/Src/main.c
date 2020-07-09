@@ -355,13 +355,13 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim){
 
 
 		//X - axis
-		gyro_read[0] = ((2*x_sum/FilterN)/1.2);
+		gyro_read[0] = ((2*x_sum/FilterN)/1.27);
 
 		//Y - axis
-		gyro_read[1] = ((2*y_sum/FilterN)/1.2);
+		gyro_read[1] = ((2*y_sum/FilterN)/1.27);
 
 		//Z - axis
-		gyro_read[2] = ((2*z_sum/FilterN)/1.2);
+		gyro_read[2] = ((2*z_sum/FilterN)/1.27);
 
 		if(cnt){
 			sprintf(display, "o5 %d", active_axis);
