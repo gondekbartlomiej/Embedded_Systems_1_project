@@ -1,14 +1,179 @@
-19:37:17 **** Incremental Build of configuration Debug for project ES_1 ****
+15:49:00 **** Incremental Build of configuration Debug for project ES_1 ****
 make -j4 all 
+arm-none-eabi-gcc "../Core/Src/main.c" -mcpu=cortex-m4 -std=gnu11 -g3 -DUSE_HAL_DRIVER -DSTM32F411xE -DDEBUG -c -I../Drivers/CMSIS/Include -I../Drivers/STM32F4xx_HAL_Driver/Inc -I../Core/Inc -I../Drivers/CMSIS/Device/ST/STM32F4xx/Include -I../Drivers/STM32F4xx_HAL_Driver/Inc/Legacy -O0 -ffunction-sections -fdata-sections -Wall -fstack-usage -MMD -MP -MF"Core/Src/main.d" -MT"Core/Src/main.o" --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -o "Core/Src/main.o"
+../Core/Src/main.c:89:18: warning: built-in function 'index' declared as non-function
+ volatile uint8_t index = 0;
+                  ^~~~~
+../Core/Src/main.c: In function 'HAL_TIM_PeriodElapsedCallback':
+../Core/Src/main.c:389:39: warning: passing argument 2 of 'HAL_SPI_TransmitReceive_DMA' from incompatible pointer type [-Wincompatible-pointer-types]
+   HAL_SPI_TransmitReceive_DMA(&hspi1, tx_buffer, rx_buffer, 3);
+                                       ^~~~~~~~~
+In file included from ../Core/Inc/stm32f4xx_hal_conf.h:356:0,
+                 from ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal.h:30,
+                 from ../Core/Inc/main.h:31,
+                 from ../Core/Src/main.c:22:
+../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_spi.h:676:19: note: expected 'uint8_t * {aka unsigned char *}' but argument is of type 'const uint16_t * {aka const short unsigned int *}'
+ HAL_StatusTypeDef HAL_SPI_TransmitReceive_DMA(SPI_HandleTypeDef *hspi, uint8_t *pTxData, uint8_t *pRxData,
+                   ^~~~~~~~~~~~~~~~~~~~~~~~~~~
+../Core/Src/main.c:389:50: warning: passing argument 3 of 'HAL_SPI_TransmitReceive_DMA' discards 'volatile' qualifier from pointer target type [-Wdiscarded-qualifiers]
+   HAL_SPI_TransmitReceive_DMA(&hspi1, tx_buffer, rx_buffer, 3);
+                                                  ^~~~~~~~~
+In file included from ../Core/Inc/stm32f4xx_hal_conf.h:356:0,
+                 from ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal.h:30,
+                 from ../Core/Inc/main.h:31,
+                 from ../Core/Src/main.c:22:
+../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_spi.h:676:19: note: expected 'uint8_t * {aka unsigned char *}' but argument is of type 'volatile int8_t * {aka volatile signed char *}'
+ HAL_StatusTypeDef HAL_SPI_TransmitReceive_DMA(SPI_HandleTypeDef *hspi, uint8_t *pTxData, uint8_t *pRxData,
+                   ^~~~~~~~~~~~~~~~~~~~~~~~~~~
+../Core/Src/main.c: In function 'main':
+../Core/Src/main.c:454:28: warning: passing argument 2 of 'HAL_SPI_Transmit' from incompatible pointer type [-Wincompatible-pointer-types]
+   HAL_SPI_Transmit(&hspi1, &setup, 1, 1000);
+                            ^
+In file included from ../Core/Inc/stm32f4xx_hal_conf.h:356:0,
+                 from ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal.h:30,
+                 from ../Core/Inc/main.h:31,
+                 from ../Core/Src/main.c:22:
+../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_spi.h:666:19: note: expected 'uint8_t * {aka unsigned char *}' but argument is of type 'const uint16_t * {aka const short unsigned int *}'
+ HAL_StatusTypeDef HAL_SPI_Transmit(SPI_HandleTypeDef *hspi, uint8_t *pData, uint16_t Size, uint32_t Timeout);
+                   ^~~~~~~~~~~~~~~~
+../Core/Src/main.c:468:19: warning: passing argument 1 of 'sprintf' discards 'volatile' qualifier from pointer target type [-Wdiscarded-qualifiers]
+    size = sprintf(msg, "[X]: %+05dG, [Y]: %+05dG, [Z]: %+05dG\n\r",
+                   ^~~
+In file included from ../Core/Src/main.c:26:0:
+/opt/st/stm32cubeide_1.3.0/plugins/com.st.stm32cube.ide.mcu.externaltools.gnu-tools-for-stm32.7-2018-q2-update.linux64_1.0.0.201904181610/tools/arm-none-eabi/include/stdio.h:244:5: note: expected 'char * restrict' but argument is of type 'volatile char *'
+ int sprintf (char *__restrict, const char *__restrict, ...)
+     ^~~~~~~
+../Core/Src/main.c:479:31: warning: passing argument 2 of 'HAL_UART_Transmit' discards 'volatile' qualifier from pointer target type [-Wdiscarded-qualifiers]
+    HAL_UART_Transmit(&huart2, msg, size, 100);
+                               ^~~
+In file included from ../Core/Inc/stm32f4xx_hal_conf.h:364:0,
+                 from ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal.h:30,
+                 from ../Core/Inc/main.h:31,
+                 from ../Core/Src/main.c:22:
+../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_uart.h:696:19: note: expected 'uint8_t * {aka unsigned char *}' but argument is of type 'volatile char *'
+ HAL_StatusTypeDef HAL_UART_Transmit(UART_HandleTypeDef *huart, uint8_t *pData, uint16_t Size, uint32_t Timeout);
+                   ^~~~~~~~~~~~~~~~~
+../Core/Src/main.c: In function 'HAL_TIM_PeriodElapsedCallback':
+../Core/Src/main.c:367:27: warning: 'sprintf' writing a terminating nul past the end of the destination [-Wformat-overflow=]
+    sprintf(display, "o5 %d", active_axis);
+                           ^
+../Core/Src/main.c:367:4: note: 'sprintf' output between 5 and 7 bytes into a destination of size 4
+    sprintf(display, "o5 %d", active_axis);
+    ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+../Core/Src/main.c:373:27: warning: 'sprintf' writing a terminating nul past the end of the destination [-Wformat-overflow=]
+     sprintf(display, "%04d", gyro_read[active_axis]);
+                           ^
+../Core/Src/main.c:373:5: note: 'sprintf' output between 5 and 12 bytes into a destination of size 4
+     sprintf(display, "%04d", gyro_read[active_axis]);
+     ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+../Core/Src/main.c:375:28: warning: 'sprintf' writing a terminating nul past the end of the destination [-Wformat-overflow=]
+     sprintf(display, " %03d", gyro_read[active_axis]);
+                            ^
+../Core/Src/main.c:375:5: note: 'sprintf' output between 5 and 13 bytes into a destination of size 4
+     sprintf(display, " %03d", gyro_read[active_axis]);
+     ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+arm-none-eabi-gcc -o "ES_1.elf" @"objects.list"   -mcpu=cortex-m4 -T"/home/bgondek/Desktop/CPS/Season_1/Embedded Systems/Embedded_Systems_1_project/ES_1/STM32F411RETX_FLASH.ld" --specs=nosys.specs -Wl,-Map="ES_1.map" -Wl,--gc-sections -static --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
+Finished building target: ES_1.elf
+ 
+arm-none-eabi-objdump -h -S  ES_1.elf  > "ES_1.list"
+arm-none-eabi-objcopy  -O binary  ES_1.elf  "ES_1.bin"
 arm-none-eabi-size   ES_1.elf 
    text	   data	    bss	    dec	    hex	filename
-  21780	    120	   2280	  24180	   5e74	ES_1.elf
+  22504	    120	   2280	  24904	   6148	ES_1.elf
 Finished building: default.size.stdout
  
-19:37:20 **** Incremental Build of configuration Debug for project ES_1 ****
+Finished building: ES_1.bin
+ 
+Finished building: ES_1.list
+ 
+15:49:18 **** Incremental Build of configuration Release for project ES_1 ****
 make -j4 all 
+arm-none-eabi-gcc "../Core/Src/main.c" -mcpu=cortex-m4 -std=gnu11 -DUSE_HAL_DRIVER -DSTM32F411xE -c -I../Drivers/CMSIS/Include -I../Drivers/STM32F4xx_HAL_Driver/Inc -I../Core/Inc -I../Drivers/CMSIS/Device/ST/STM32F4xx/Include -I../Drivers/STM32F4xx_HAL_Driver/Inc/Legacy -Os -ffunction-sections -fdata-sections -Wall -fstack-usage -MMD -MP -MF"Core/Src/main.d" -MT"Core/Src/main.o" --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -o "Core/Src/main.o"
+../Core/Src/main.c:89:18: warning: built-in function 'index' declared as non-function
+ volatile uint8_t index = 0;
+                  ^~~~~
+../Core/Src/main.c: In function 'HAL_TIM_PeriodElapsedCallback':
+../Core/Src/main.c:389:39: warning: passing argument 2 of 'HAL_SPI_TransmitReceive_DMA' from incompatible pointer type [-Wincompatible-pointer-types]
+   HAL_SPI_TransmitReceive_DMA(&hspi1, tx_buffer, rx_buffer, 3);
+                                       ^~~~~~~~~
+In file included from ../Core/Inc/stm32f4xx_hal_conf.h:356:0,
+                 from ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal.h:30,
+                 from ../Core/Inc/main.h:31,
+                 from ../Core/Src/main.c:22:
+../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_spi.h:676:19: note: expected 'uint8_t * {aka unsigned char *}' but argument is of type 'const uint16_t * {aka const short unsigned int *}'
+ HAL_StatusTypeDef HAL_SPI_TransmitReceive_DMA(SPI_HandleTypeDef *hspi, uint8_t *pTxData, uint8_t *pRxData,
+                   ^~~~~~~~~~~~~~~~~~~~~~~~~~~
+../Core/Src/main.c:389:50: warning: passing argument 3 of 'HAL_SPI_TransmitReceive_DMA' discards 'volatile' qualifier from pointer target type [-Wdiscarded-qualifiers]
+   HAL_SPI_TransmitReceive_DMA(&hspi1, tx_buffer, rx_buffer, 3);
+                                                  ^~~~~~~~~
+In file included from ../Core/Inc/stm32f4xx_hal_conf.h:356:0,
+                 from ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal.h:30,
+                 from ../Core/Inc/main.h:31,
+                 from ../Core/Src/main.c:22:
+../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_spi.h:676:19: note: expected 'uint8_t * {aka unsigned char *}' but argument is of type 'volatile int8_t * {aka volatile signed char *}'
+ HAL_StatusTypeDef HAL_SPI_TransmitReceive_DMA(SPI_HandleTypeDef *hspi, uint8_t *pTxData, uint8_t *pRxData,
+                   ^~~~~~~~~~~~~~~~~~~~~~~~~~~
+../Core/Src/main.c: In function 'main':
+../Core/Src/main.c:454:28: warning: passing argument 2 of 'HAL_SPI_Transmit' from incompatible pointer type [-Wincompatible-pointer-types]
+   HAL_SPI_Transmit(&hspi1, &setup, 1, 1000);
+                            ^
+In file included from ../Core/Inc/stm32f4xx_hal_conf.h:356:0,
+                 from ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal.h:30,
+                 from ../Core/Inc/main.h:31,
+                 from ../Core/Src/main.c:22:
+../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_spi.h:666:19: note: expected 'uint8_t * {aka unsigned char *}' but argument is of type 'const uint16_t * {aka const short unsigned int *}'
+ HAL_StatusTypeDef HAL_SPI_Transmit(SPI_HandleTypeDef *hspi, uint8_t *pData, uint16_t Size, uint32_t Timeout);
+                   ^~~~~~~~~~~~~~~~
+../Core/Src/main.c:468:19: warning: passing argument 1 of 'sprintf' discards 'volatile' qualifier from pointer target type [-Wdiscarded-qualifiers]
+    size = sprintf(msg, "[X]: %+05dG, [Y]: %+05dG, [Z]: %+05dG\n\r",
+                   ^~~
+In file included from ../Core/Src/main.c:26:0:
+/opt/st/stm32cubeide_1.3.0/plugins/com.st.stm32cube.ide.mcu.externaltools.gnu-tools-for-stm32.7-2018-q2-update.linux64_1.0.0.201904181610/tools/arm-none-eabi/include/stdio.h:244:5: note: expected 'char * restrict' but argument is of type 'volatile char *'
+ int sprintf (char *__restrict, const char *__restrict, ...)
+     ^~~~~~~
+../Core/Src/main.c:479:31: warning: passing argument 2 of 'HAL_UART_Transmit' discards 'volatile' qualifier from pointer target type [-Wdiscarded-qualifiers]
+    HAL_UART_Transmit(&huart2, msg, size, 100);
+                               ^~~
+In file included from ../Core/Inc/stm32f4xx_hal_conf.h:364:0,
+                 from ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal.h:30,
+                 from ../Core/Inc/main.h:31,
+                 from ../Core/Src/main.c:22:
+../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_uart.h:696:19: note: expected 'uint8_t * {aka unsigned char *}' but argument is of type 'volatile char *'
+ HAL_StatusTypeDef HAL_UART_Transmit(UART_HandleTypeDef *huart, uint8_t *pData, uint16_t Size, uint32_t Timeout);
+                   ^~~~~~~~~~~~~~~~~
+../Core/Src/main.c: In function 'HAL_TIM_PeriodElapsedCallback':
+../Core/Src/main.c:367:25: warning: '%d' directive writing between 1 and 3 bytes into a region of size 1 [-Wformat-overflow=]
+    sprintf(display, "o5 %d", active_axis);
+                         ^~
+../Core/Src/main.c:367:21: note: directive argument in the range [0, 255]
+    sprintf(display, "o5 %d", active_axis);
+                     ^~~~~~~
+../Core/Src/main.c:367:4: note: 'sprintf' output between 5 and 7 bytes into a destination of size 4
+    sprintf(display, "o5 %d", active_axis);
+    ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+../Core/Src/main.c:373:27: warning: 'sprintf' writing a terminating nul past the end of the destination [-Wformat-overflow=]
+     sprintf(display, "%04d", gyro_read[active_axis]);
+                           ^
+../Core/Src/main.c:373:5: note: 'sprintf' output between 5 and 12 bytes into a destination of size 4
+     sprintf(display, "%04d", gyro_read[active_axis]);
+     ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+../Core/Src/main.c:375:28: warning: 'sprintf' writing a terminating nul past the end of the destination [-Wformat-overflow=]
+     sprintf(display, " %03d", gyro_read[active_axis]);
+                            ^
+../Core/Src/main.c:375:5: note: 'sprintf' output between 5 and 13 bytes into a destination of size 4
+     sprintf(display, " %03d", gyro_read[active_axis]);
+     ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+arm-none-eabi-gcc -o "ES_1.elf" @"objects.list"   -mcpu=cortex-m4 -T"/home/bgondek/Desktop/CPS/Season_1/Embedded Systems/Embedded_Systems_1_project/ES_1/STM32F411RETX_FLASH.ld" --specs=nosys.specs -Wl,-Map="ES_1.map" -Wl,--gc-sections -static --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
+Finished building target: ES_1.elf
+ 
+arm-none-eabi-objdump -h -S  ES_1.elf  > "ES_1.list"
+arm-none-eabi-objcopy  -O binary  ES_1.elf  "ES_1.bin"
 arm-none-eabi-size   ES_1.elf 
    text	   data	    bss	    dec	    hex	filename
-  21780	    120	   2280	  24180	   5e74	ES_1.elf
+  13864	    120	   2272	  16256	   3f80	ES_1.elf
 Finished building: default.size.stdout
+Finished building: ES_1.bin
+ 
+ 
+Finished building: ES_1.list
  

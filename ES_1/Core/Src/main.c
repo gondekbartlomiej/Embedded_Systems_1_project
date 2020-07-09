@@ -386,8 +386,7 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim){
 
 		HAL_GPIO_WritePin(gyro_CS_GPIO_Port, gyro_CS_Pin, GPIO_PIN_SET);
 		HAL_GPIO_WritePin(gyro_CS_GPIO_Port, gyro_CS_Pin, GPIO_PIN_RESET);
-		HAL_SPI_TransmitReceive(&hspi1, tx_buffer, rx_buffer, 3,100);
-		HAL_GPIO_WritePin(gyro_CS_GPIO_Port, gyro_CS_Pin, GPIO_PIN_SET);
+		HAL_SPI_TransmitReceive_DMA(&hspi1, tx_buffer, rx_buffer, 3);
 	}
 }
 
@@ -395,7 +394,7 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim){
 void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin){
   if(GPIO_Pin == button_IT_Pin){
 
-	  //HAL_Delay(20);
+//	  HAL_Delay(20);
 	  if(HAL_GPIO_ReadPin(button_IT_GPIO_Port, button_IT_Pin)==GPIO_PIN_SET){
 		  cnt = 200;
 		  active_axis += 1;
@@ -466,10 +465,14 @@ int main(void)
 
 
 
-	  size = sprintf(msg, "[X]: %3d, [Y]: %3d, [Z]: %3d\n\r",
-				 	 rx_buffer[0],
-					 rx_buffer[2],
-					 rx_buffer[4] );
+	  size = sprintf(msg, "[X]: %+05dG, [Y]: %+05dG, [Z]: %+05dG\n\r",
+				 	 gyro_read[0],
+					 gyro_read[1],
+					 gyro_read[2] );
+
+	  msg[ 6]=msg[ 7]; msg[ 7]='.';
+	  msg[19]=msg[20]; msg[20]='.';
+	  msg[32]=msg[33]; msg[33]='.';
 
 
 
